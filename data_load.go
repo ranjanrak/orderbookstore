@@ -9,7 +9,7 @@ import (
 	kiteconnect "github.com/zerodha/gokiteconnect/v3"
 )
 
-func DataLoad() interface{} {
+func DataLoad() {
 	const (
 		apiKey      string = "your api key"
 		accessToken string = "your access token"
@@ -122,17 +122,5 @@ func DataLoad() interface{} {
 	if err := tx.Commit(); err != nil {
 		log.Fatal(err)
 	}
-
-	// example query
-	rows, err := connect.Query(`SELECT * FROM orderbook FINAL 
-								WHERE (tradingsymbol = 'instrument_symbol') 
-								ORDER BY (order_timestamp, order_id)`)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	return rows
 
 }

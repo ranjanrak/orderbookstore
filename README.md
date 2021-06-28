@@ -11,12 +11,24 @@ go get -u github.com/ranjanrak/orderbookstore
 package main
 
 import (
-    "fmt"
     "github.com/ranjanrak/orderbookstore"
 )
 
 func main() {
-    data := orderbookstore.DataLoad()
-	fmt.Printf("%+v\n", data)
+    // Store current orderbook data to clickhouse DB
+    orderbookstore.DataLoad()
+    // Fetch all historical order's for the requested symbol
+    orderbookstore.QueryDB("SBIN")
 }
+```
+
+## Response
+```
+order_timestamp: 2021-06-23 09:15:14 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 421.800000
+order_timestamp: 2021-06-23 09:16:48 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 421.500000
+order_timestamp: 2021-06-25 09:07:46 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 421.000000
+order_timestamp: 2021-06-25 09:15:08 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 420.250000
+order_timestamp: 2021-06-25 09:17:14 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 420.500000
+order_timestamp: 2021-06-28 12:50:24 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 427.600000
+order_timestamp: 2021-06-28 12:50:53 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 427.750000
 ```
