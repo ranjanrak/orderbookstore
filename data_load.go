@@ -58,8 +58,8 @@ func DataLoad() {
 			pending_quantity   FLOAT(),
 			filled_quantity    FLOAT(),
 			disclosed_quantity FLOAT(),
-			order_timestamp    VARCHAR(255),
-			exchange_timestamp VARCHAR(255),
+			order_timestamp    DateTime('Asia/Calcutta'),
+			exchange_timestamp DateTime('Asia/Calcutta'),
 			status_message     VARCHAR(255),
 			tag                VARCHAR(255)
 		) engine=ReplacingMergeTree()
@@ -111,8 +111,8 @@ func DataLoad() {
 			order.PendingQuantity,
 			order.FilledQuantity,
 			order.DisclosedQuantity,
-			order.OrderTimestamp.Time.String(),
-			order.ExchangeTimestamp.Time.String(),
+			order.OrderTimestamp.Time,
+			order.ExchangeTimestamp.Time,
 			order.StatusMessage,
 			order.Tag,
 		); err != nil {
