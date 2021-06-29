@@ -17,8 +17,10 @@ import (
 func main() {
     // Store current orderbook data to clickhouse DB
     orderbookstore.DataLoad()
+
     // Fetch all historical order's for the requested symbol
     orderbookstore.QueryDB("SBIN")
+    
     // Fetch average buy and sell price for the mentioned symbol and period
     time_from := time.Date(2021, 6, 29, 9, 41, 0, 0, time.UTC)
     avgBook := orderbookstore.QueryAvgPrice("ITC", time_from)

@@ -21,14 +21,14 @@ type AvgBook struct {
 func QueryAvgPrice(tradingsymbol string, date time.Time) AvgBook {
 	
 	var (
-		total_buy  				float64
-		buy_qty    				float64
-		total_sell 				float64
-		sell_qty   				float64
-		transaction_type        string
-		symbol                  string
-		average_price           float64
-		filled_quantity         float64
+		total_buy           float64
+		buy_qty             float64
+		total_sell          float64
+		sell_qty            float64
+		transaction_type    string
+		symbol              string
+		average_price       float64
+		filled_quantity     float64
 	)
 
 	// Use DSN as your clickhouse DB setup.

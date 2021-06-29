@@ -21,14 +21,14 @@ func QueryDB(tradingsymbol string) {
 	}
 	// example query
 	query_statement := fmt.Sprintf(`SELECT 
-										order_timestamp, 
-										order_id, 
-										tradingsymbol, 
-										average_price   
-									FROM orderbook 
-									FINAL 
-									WHERE (tradingsymbol = '%s')
-									ORDER BY (order_timestamp, order_id)`, tradingsymbol)
+					     order_timestamp, 
+					     order_id, 
+					     tradingsymbol, 
+					     average_price   
+					FROM orderbook 
+					FINAL 
+					WHERE (tradingsymbol = '%s')
+					ORDER BY (order_timestamp, order_id)`, tradingsymbol)
 
 	rows, err := connect.Query(query_statement)
 	if err != nil {
