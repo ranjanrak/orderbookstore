@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"math"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go"
@@ -19,16 +20,16 @@ type AvgBook struct {
 }
 
 func QueryAvgPrice(tradingsymbol string, date time.Time) AvgBook {
-	
+
 	var (
-		total_buy           float64
-		buy_qty             float64
-		total_sell          float64
-		sell_qty            float64
-		transaction_type    string
-		symbol              string
-		average_price       float64
-		filled_quantity     float64
+		total_buy        float64
+		buy_qty          float64
+		total_sell       float64
+		sell_qty         float64
+		transaction_type string
+		symbol           string
+		average_price    float64
+		filled_quantity  float64
 	)
 
 	// Use DSN as your clickhouse DB setup.
@@ -65,23 +66,23 @@ func QueryAvgPrice(tradingsymbol string, date time.Time) AvgBook {
 			log.Fatal(err)
 		}
 		// calculate total buy and sell amount and qty
-		if (transaction_type == "BUY" && average_price != 0) {
+		if transaction_type == "BUY" && average_price != 0 {
 			buy_qty = filled_quantity + buy_qty
 			total_buy = average_price*filled_quantity + total_buy
-		} else if (transaction_type == "SELL" && average_price != 0) {
+		} else if transaction_type == "SELL" && average_price != 0 {
 			sell_qty = filled_quantity + sell_qty
 			total_sell = average_price*filled_quantity + total_sell
 		}
 	}
 	// calculate buy and sell avg price
-	buy_avg := (total_buy/buy_qty)
-	sell_avg := (total_sell/sell_qty)
+	buy_avg := (total_buy / buy_qty)
+	sell_avg := (total_sell / sell_qty)
 
 	avgBook := AvgBook{
-		symbol: symbol,
-		buy_avg: buy_avg,
-		buy_qty: buy_qty,
-		sell_avg: sell_avg,
+		symbol:   symbol,
+		buy_avg:  math.Round(buy_avg*100) / 100,
+		buy_qty:  buy_qty,
+		sell_avg: math.Round(sell_avg*100) / 100,
 		sell_qty: sell_qty,
 	}
 	return avgBook
