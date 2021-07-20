@@ -22,9 +22,10 @@ func main() {
     orderbookstore.QueryDB("SBIN")
     
     // Fetch average buy and sell price for the mentioned symbol and period
-    time_from := time.Date(2021, 6, 29, 9, 41, 0, 0, time.UTC)
-    avgBook := orderbookstore.QueryAvgPrice("ITC", time_from)
-    fmt.Printf("%+v\n", avgBook)
+    time_start := time.Date(2021, 6, 29, 9, 41, 0, 0, time.UTC)
+	time_end := time.Date(2021, 7, 15, 15, 05, 0, 0, time.UTC)
+	avgBook := orderbookstore.QueryAvgPrice("IOC", time_start, time_end)
+	fmt.Printf("%+v\n", avgBook)
 
 }
 ```
@@ -40,7 +41,7 @@ order_timestamp: 2021-06-25 09:17:14 +0000 UTC, order_id: XXXXXXX, tradingsymbol
 order_timestamp: 2021-06-28 12:50:24 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 427.600000
 order_timestamp: 2021-06-28 12:50:53 +0000 UTC, order_id: XXXXXXX, tradingsymbol: SBIN, average_price: 427.750000
 ```
-2> Response for `orderbookstore.QueryAvgPrice("ITC", time_from)`:
+2> Response for `orderbookstore.QueryAvgPrice("IOC", time_start, time_end)`:
 ```
-{symbol:ITC buy_avg:203.44 buy_qty:10 sell_avg:203.7 sell_qty:2}
+{symbol:IOC buy_avg:107.95 buy_qty:29 sell_avg:107.61 sell_qty:17}
 ```
