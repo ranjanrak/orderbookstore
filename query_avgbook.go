@@ -19,7 +19,7 @@ type AvgBook struct {
 	sell_qty float64
 }
 
-func QueryAvgPrice(tradingsymbol string, date time.Time) AvgBook {
+func QueryAvgPrice(tradingsymbol string, startTime time.Time, endTime time.Time) AvgBook {
 
 	var (
 		total_buy        float64
@@ -43,7 +43,10 @@ func QueryAvgPrice(tradingsymbol string, date time.Time) AvgBook {
 		}
 	}
 
-	DateFormat := date.Format("2006-01-02 15:04:05")
+	startT := startTime.Format("2006-01-02 15:04:05")
+
+	endT := endTime.Format("2006-01-02 15:04:05")
+
 	query_statement := fmt.Sprintf(`SELECT
 										transaction_type, 
 										tradingsymbol, 
@@ -51,8 +54,8 @@ func QueryAvgPrice(tradingsymbol string, date time.Time) AvgBook {
 										filled_quantity   
 									FROM orderbook 
 									FINAL 
-									WHERE (tradingsymbol = '%s' AND order_timestamp >= '%s')
-									ORDER BY (order_timestamp, transaction_type)`, tradingsymbol, DateFormat)
+									WHERE (tradingsymbol = '%s' AND order_timestamp >= '%s' AND order_timestamp <= '%s')
+									ORDER BY (order_timestamp, transaction_type)`, tradingsymbol, startT, endT)
 
 	rows, err := connect.Query(query_statement)
 	if err != nil {
