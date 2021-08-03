@@ -12,11 +12,12 @@ import (
 
 // AvgBook represent avg price and qty detail for both Buy and sell for symbol
 type AvgBook struct {
-	symbol   string
-	buy_avg  float64
-	buy_qty  float64
-	sell_avg float64
-	sell_qty float64
+	symbol      string
+	buy_avg     float64
+	buy_qty     float64
+	sell_avg    float64
+	sell_qty    float64
+	realizedpnl float64
 }
 
 func QueryAvgPrice(tradingsymbol string, startTime time.Time, endTime time.Time) AvgBook {
@@ -24,6 +25,8 @@ func QueryAvgPrice(tradingsymbol string, startTime time.Time, endTime time.Time)
 	var (
 		total_buy        float64
 		buy_qty          float64
+		realizedqty      float64
+		realizedbuy      float64
 		total_sell       float64
 		sell_qty         float64
 		transaction_type string
@@ -81,12 +84,30 @@ func QueryAvgPrice(tradingsymbol string, startTime time.Time, endTime time.Time)
 	buy_avg := (total_buy / buy_qty)
 	sell_avg := (total_sell / sell_qty)
 
-	avgBook := AvgBook{
+	rows1, err := connect.Query(query_statement)
+	
+	defer rows1.Close()
+
+	// calculate realized P&L
+	for rows1.Next() {
+		if err := rows1.Scan(&transaction_type, &symbol, &average_price, &filled_quantity); err != nil {
+			log.Fatal(err)
+		}
+		// calculate total buy equivalent to total sold qty
+		if transaction_type == "BUY" && average_price != 0 && realizedqty < sell_qty {
+			realizedqty = filled_quantity + realizedqty
+			realizedbuy = average_price*filled_quantity + realizedbuy
+		}
+	}
+	realizedpnl := math.Round((total_sell - realizedbuy)*100) / 100
+	avgBook := AvgBook {
 		symbol:   symbol,
 		buy_avg:  math.Round(buy_avg*100) / 100,
 		buy_qty:  buy_qty,
 		sell_avg: math.Round(sell_avg*100) / 100,
 		sell_qty: sell_qty,
+		realizedpnl: realizedpnl,
 	}
+
 	return avgBook
 }
