@@ -23,9 +23,9 @@ func main() {
     
     // Fetch average buy and sell price for the mentioned symbol and period
     time_start := time.Date(2021, 6, 29, 9, 41, 0, 0, time.UTC)
-	time_end := time.Date(2021, 7, 15, 15, 05, 0, 0, time.UTC)
-	avgBook := orderbookstore.QueryAvgPrice("IOC", time_start, time_end)
-	fmt.Printf("%+v\n", avgBook)
+    time_end := time.Date(2021, 8, 3, 15, 05, 0, 0, time.UTC)
+    avgBook := orderbookstore.QueryAvgPrice("IOC", time_start, time_end)
+    fmt.Printf("%+v\n", avgBook)
 
 }
 ```
@@ -43,5 +43,5 @@ order_timestamp: 2021-06-28 12:50:53 +0000 UTC, order_id: XXXXXXX, tradingsymbol
 ```
 2> Response for `orderbookstore.QueryAvgPrice("IOC", time_start, time_end)`:
 ```
-{symbol:IOC buy_avg:107.95 buy_qty:29 sell_avg:107.61 sell_qty:17}
+{symbol:IOC buy_avg:107.41 buy_qty:39 sell_avg:107.61 sell_qty:17 realizedpnl:-22.9}
 ```
