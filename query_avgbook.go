@@ -12,27 +12,27 @@ import (
 
 // AvgBook represent avg price and qty detail for both Buy and sell for symbol
 type AvgBook struct {
-	symbol      string
-	buy_avg     float64
-	buy_qty     float64
-	sell_avg    float64
-	sell_qty    float64
-	realizedpnl float64
+	Symbol      string
+	BuyAvg      float64
+	BuyQty      float64
+	SellAvg     float64
+	SellQty     float64
+	RealizedPnl float64
 }
 
-func QueryAvgPrice(tradingsymbol string, startTime time.Time, endTime time.Time) AvgBook {
+func QueryAvgPrice(tradingSymbol string, startTime time.Time, endTime time.Time) AvgBook {
 
 	var (
-		total_buy        float64
-		buy_qty          float64
-		realizedqty      float64
-		realizedbuy      float64
-		total_sell       float64
-		sell_qty         float64
-		transaction_type string
-		symbol           string
-		average_price    float64
-		filled_quantity  float64
+		totalBuy        float64
+		buyQty          float64
+		realizedQty     float64
+		realizedBuy     float64
+		totalSell       float64
+		sellQty         float64
+		transactionType string
+		symbol          string
+		averagePrice    float64
+		filledQuantity  float64
 	)
 
 	// Use DSN as your clickhouse DB setup.
@@ -58,7 +58,7 @@ func QueryAvgPrice(tradingsymbol string, startTime time.Time, endTime time.Time)
 									FROM orderbook 
 									FINAL 
 									WHERE (tradingsymbol = '%s' AND order_timestamp >= '%s' AND order_timestamp <= '%s')
-									ORDER BY (order_timestamp, transaction_type)`, tradingsymbol, startT, endT)
+									ORDER BY (order_timestamp, transaction_type)`, tradingSymbol, startT, endT)
 
 	rows, err := connect.Query(query_statement)
 	if err != nil {
@@ -68,45 +68,44 @@ func QueryAvgPrice(tradingsymbol string, startTime time.Time, endTime time.Time)
 	defer rows.Close()
 
 	for rows.Next() {
-		if err := rows.Scan(&transaction_type, &symbol, &average_price, &filled_quantity); err != nil {
+		if err := rows.Scan(&transactionType, &symbol, &averagePrice, &filledQuantity); err != nil {
 			log.Fatal(err)
 		}
 		// calculate total buy and sell amount and qty
-		if transaction_type == "BUY" && average_price != 0 {
-			buy_qty = filled_quantity + buy_qty
-			total_buy = average_price*filled_quantity + total_buy
-		} else if transaction_type == "SELL" && average_price != 0 {
-			sell_qty = filled_quantity + sell_qty
-			total_sell = average_price*filled_quantity + total_sell
+		if transactionType == "BUY" && averagePrice != 0 {
+			buyQty = filledQuantity + buyQty
+			totalBuy = averagePrice*filledQuantity + totalBuy
+		} else if transactionType == "SELL" && averagePrice != 0 {
+			sellQty = filledQuantity + sellQty
+			totalSell = averagePrice*filledQuantity + totalSell
 		}
 	}
 	// calculate buy and sell avg price
-	buy_avg := (total_buy / buy_qty)
-	sell_avg := (total_sell / sell_qty)
+	buyAvg := (totalBuy / buyQty)
+	sellAvg := (totalSell / sellQty)
 
 	rows1, err := connect.Query(query_statement)
-	
+
 	defer rows1.Close()
 
 	// calculate realized P&L
 	for rows1.Next() {
-		if err := rows1.Scan(&transaction_type, &symbol, &average_price, &filled_quantity); err != nil {
+		if err := rows1.Scan(&transactionType, &symbol, &averagePrice, &filledQuantity); err != nil {
 			log.Fatal(err)
 		}
 		// calculate total buy equivalent to total sold qty
-		if transaction_type == "BUY" && average_price != 0 && realizedqty < sell_qty {
-			realizedqty = filled_quantity + realizedqty
-			realizedbuy = average_price*filled_quantity + realizedbuy
+		if transactionType == "BUY" && averagePrice != 0 && realizedQty < sellQty {
+			realizedQty = filledQuantity + realizedQty
+			realizedBuy = averagePrice*filledQuantity + realizedBuy
 		}
 	}
-	realizedpnl := math.Round((total_sell - realizedbuy)*100) / 100
-	avgBook := AvgBook {
-		symbol:   symbol,
-		buy_avg:  math.Round(buy_avg*100) / 100,
-		buy_qty:  buy_qty,
-		sell_avg: math.Round(sell_avg*100) / 100,
-		sell_qty: sell_qty,
-		realizedpnl: realizedpnl,
+	avgBook := AvgBook{
+		Symbol:      symbol,
+		BuyAvg:      math.Round(buyAvg*100) / 100,
+		BuyQty:      buyQty,
+		SellAvg:     math.Round(sellAvg*100) / 100,
+		SellQty:     sellQty,
+		RealizedPnl: math.Round((totalSell-realizedBuy)*100) / 100,
 	}
 
 	return avgBook
