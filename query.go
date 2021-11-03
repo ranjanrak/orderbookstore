@@ -18,10 +18,22 @@ type TradeStore struct {
 	TransactionType string
 }
 
+// SymbolBook represents symbol specific tradebook fields
+type SymbolBook struct {
+	Symbol          string
+	OrderID         string
+	OrderTimestamp  string
+	AveragePrice    float64
+	TransactionType string
+}
+
 // Trades is list of trade
 type Trades []TradeStore
 
-func QueryDB(tradingSymbol string) {
+// SymbolStore is list of SymbolBook trade
+type SymbolStore []SymbolBook
+
+func QueryDB(tradingSymbol string) SymbolStore {
 	// Use DSN as your clickhouse DB setup.
 	// visit https://github.com/ClickHouse/clickhouse-go#dsn to know more
 	connect, err := sql.Open("clickhouse", "tcp://127.0.0.1:9000?debug=true")
@@ -32,7 +44,7 @@ func QueryDB(tradingSymbol string) {
 			fmt.Println(err)
 		}
 	}
-	// example query
+
 	queryStatement := fmt.Sprintf(`SELECT 
 					     order_timestamp, 
 					     order_id, 
@@ -40,7 +52,7 @@ func QueryDB(tradingSymbol string) {
 					     average_price   
 					FROM orderbook 
 					FINAL 
-					WHERE (tradingsymbol = '%s')
+					WHERE (tradingsymbol = '%s' AND status = 'COMPLETE')
 					ORDER BY (order_timestamp, order_id)`, tradingSymbol)
 
 	rows, err := connect.Query(queryStatement)
@@ -51,17 +63,25 @@ func QueryDB(tradingSymbol string) {
 	defer rows.Close()
 	for rows.Next() {
 		var (
-			orderTimestamp string
-			orderId        string
-			symbol         string
-			averagePrice   float64
+			orderTimestamp  string
+			orderId         string
+			symbol          string
+			averagePrice    float64
+			transactionType string
 		)
-		if err := rows.Scan(&orderTimestamp, &orderId, &symbol, &averagePrice); err != nil {
+		if err := rows.Scan(&orderTimestamp, &orderId, &symbol, &averagePrice, &transactionType); err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("orderTimestamp: %s, orderId: %s, tradingSymbol: %s, averagePrice: %f\n",
-			orderTimestamp, orderId, symbol, averagePrice)
+		symbolTrade := SymbolBook{
+			Symbol:          symbol,
+			OrderID:         orderId,
+			OrderTimestamp:  orderTimestamp,
+			AveragePrice:    averagePrice,
+			TransactionType: transactionType,
+		}
+		symbolList = append(symbolList, symbolTrade)
 	}
+	return symbolList
 }
 
 func TradeBook(startTime, endTime time.Time) Trades {
