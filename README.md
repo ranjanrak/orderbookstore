@@ -18,8 +18,9 @@ func main() {
     // Store current orderbook data to clickhouse DB
     orderbookstore.DataLoad()
 
-    // Fetch all historical order's for the requested symbol
-    orderbookstore.QueryDB("SBIN")
+    // Fetch all historical order's for the symbol
+    symbolBook := orderbookstore.QueryDB("SBIN")
+    fmt.Printf("%+v\n", symbolBook)
     
     startTime := time.Date(2021, 6, 29, 9, 41, 0, 0, time.UTC)
     endTime := time.Date(2021, 8, 3, 15, 05, 0, 0, time.UTC)
@@ -38,10 +39,11 @@ func main() {
 ## Response
 1> Response for `orderbookstore.QueryDB("SBIN")`:
 ```
-orderTimestamp: 2021-06-23 09:15:14 +0000 UTC, orderId: XXXXXXX, tradingSymbol: SBIN, averagePrice: 421.800000
-orderTimestamp: 2021-06-23 09:16:48 +0000 UTC, orderId: XXXXXXX, tradingSymbol: SBIN, averagePrice: 421.500000
-orderTimestamp: 2021-06-25 09:07:46 +0000 UTC, orderId: XXXXXXX, tradingSymbol: SBIN, averagePrice: 421.000000
-orderTimestamp: 2021-06-25 09:15:08 +0000 UTC, orderId: XXXXXXX, tradingSymbol: SBIN, averagePrice: 420.250000
+[{Symbol:SBIN OrderID:210629000202833 OrderTimestamp:2021-06-29T14:45:24+05:30 
+AveragePrice:426.65 TransactionType:BUY} {Symbol:SBIN OrderID:210629002938256 
+OrderTimestamp:2021-06-29T18:50:27+05:30 AveragePrice:424.05 TransactionType:SELL} 
+{Symbol:SBIN OrderID:210629002940618 OrderTimestamp:2021-06-29T18:50:54+05:30 
+AveragePrice:423.95 TransactionType:SELL}]
 ```
 2> Response for `orderbookstore.QueryAvgPrice("IOC", startTime, endTime)`:
 ```
