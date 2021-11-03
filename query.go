@@ -33,7 +33,7 @@ type Trades []TradeStore
 // SymbolStore is list of SymbolBook trade
 type SymbolStore []SymbolBook
 
-func QueryDB(tradingSymbol string) SymbolStore {
+func QuerySymbol(tradingSymbol string) SymbolStore {
 	// Use DSN as your clickhouse DB setup.
 	// visit https://github.com/ClickHouse/clickhouse-go#dsn to know more
 	connect, err := sql.Open("clickhouse", "tcp://127.0.0.1:9000?debug=true")

@@ -19,7 +19,7 @@ func main() {
     orderbookstore.DataLoad()
 
     // Fetch all historical order's for the symbol
-    symbolBook := orderbookstore.QueryDB("SBIN")
+    symbolBook := orderbookstore.QuerySymbol("SBIN")
     fmt.Printf("%+v\n", symbolBook)
     
     startTime := time.Date(2021, 6, 29, 9, 41, 0, 0, time.UTC)
