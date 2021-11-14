@@ -20,6 +20,7 @@ type TradeStore struct {
 
 // SymbolBook represents symbol specific tradebook fields
 type SymbolBook struct {
+	Exchange        string
 	Symbol          string
 	OrderID         string
 	OrderTimestamp  string
@@ -48,6 +49,7 @@ func QuerySymbol(tradingSymbol string) SymbolStore {
 	queryStatement := fmt.Sprintf(`SELECT 
 					     order_timestamp, 
 					     order_id, 
+						 exchange,
 					     tradingsymbol, 
 					     average_price   
 					FROM orderbook 
@@ -65,14 +67,16 @@ func QuerySymbol(tradingSymbol string) SymbolStore {
 		var (
 			orderTimestamp  string
 			orderId         string
+			exchange        string
 			symbol          string
 			averagePrice    float64
 			transactionType string
 		)
-		if err := rows.Scan(&orderTimestamp, &orderId, &symbol, &averagePrice, &transactionType); err != nil {
+		if err := rows.Scan(&orderTimestamp, &orderId, &exchange, &symbol, &averagePrice, &transactionType); err != nil {
 			log.Fatal(err)
 		}
 		symbolTrade := SymbolBook{
+			Exchange:        exchange,
 			Symbol:          symbol,
 			OrderID:         orderId,
 			OrderTimestamp:  orderTimestamp,
