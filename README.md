@@ -37,12 +37,12 @@ func main() {
 ```
 
 ## Response
-1> Response for `orderbookstore.QueryDB("SBIN")`:
+1> Response for `orderbookstore.QuerySymbol("SBIN")`:
 ```
-[{Symbol:SBIN OrderID:210629000202833 OrderTimestamp:2021-06-29T14:45:24+05:30 
-AveragePrice:426.65 TransactionType:BUY} {Symbol:SBIN OrderID:210629002938256 
+[{Exchange:NSE Symbol:SBIN OrderID:210629000202833 OrderTimestamp:2021-06-29T14:45:24+05:30 
+AveragePrice:426.65 TransactionType:BUY} {Exchange:NSE Symbol:SBIN OrderID:210629002938256 
 OrderTimestamp:2021-06-29T18:50:27+05:30 AveragePrice:424.05 TransactionType:SELL} 
-{Symbol:SBIN OrderID:210629002940618 OrderTimestamp:2021-06-29T18:50:54+05:30 
+{Exchange:BSE Symbol:SBIN OrderID:210629002940618 OrderTimestamp:2021-06-29T18:50:54+05:30 
 AveragePrice:423.95 TransactionType:SELL}]
 ```
 2> Response for `orderbookstore.QueryAvgPrice("IOC", startTime, endTime)`:
