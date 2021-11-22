@@ -15,22 +15,25 @@ import (
 )
 
 func main() {
+    // Create new orderbook instance
+    client := orderbookstore.New()
+
     // Store current orderbook data to clickhouse DB
-    orderbookstore.DataLoad()
+    client.DataLoad()
 
     // Fetch all historical order's for the symbol
-    symbolBook := orderbookstore.QuerySymbol("SBIN")
+    symbolBook := client.QuerySymbol("SBIN")
     fmt.Printf("%+v\n", symbolBook)
     
     startTime := time.Date(2021, 6, 29, 9, 41, 0, 0, time.UTC)
     endTime := time.Date(2021, 8, 3, 15, 05, 0, 0, time.UTC)
 
     // Fetch average buy and sell price for the mentioned symbol and period
-    avgBook := orderbookstore.QueryAvgPrice("IOC", startTime, endTime)
+    avgBook := client.QueryAvgPrice("IOC", startTime, endTime)
     fmt.Printf("%+v\n", avgBook)
 
     // Fetch complete tradebook between start and end date
-    tradeBook := orderbookstore.TradeBook(startTime, endTime)
+    tradeBook := client.TradeBook(startTime, endTime)
     fmt.Printf("%+v\n", tradeBook)
 
 }
