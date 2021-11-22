@@ -1,13 +1,10 @@
 package orderbookstore
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"math"
 	"time"
-
-	"github.com/ClickHouse/clickhouse-go"
 )
 
 // AvgBook represent avg price and qty detail for both Buy and sell for symbol
@@ -20,7 +17,7 @@ type AvgBook struct {
 	RealizedPnl float64
 }
 
-func QueryAvgPrice(tradingSymbol string, startTime time.Time, endTime time.Time) AvgBook {
+func (c *Client) QueryAvgPrice(tradingSymbol string, startTime time.Time, endTime time.Time) AvgBook {
 
 	var (
 		totalBuy        float64
@@ -35,32 +32,21 @@ func QueryAvgPrice(tradingSymbol string, startTime time.Time, endTime time.Time)
 		filledQuantity  float64
 	)
 
-	// Use DSN as your clickhouse DB setup.
-	// visit https://github.com/ClickHouse/clickhouse-go#dsn to know more
-	connect, err := sql.Open("clickhouse", "tcp://127.0.0.1:9000?debug=true")
-	if err := connect.Ping(); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
-			fmt.Printf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
-		} else {
-			fmt.Println(err)
-		}
-	}
-
 	startT := startTime.Format("2006-01-02 15:04:05")
 
 	endT := endTime.Format("2006-01-02 15:04:05")
 
 	query_statement := fmt.Sprintf(`SELECT
-										transaction_type, 
-										tradingsymbol, 
-										average_price,
-										filled_quantity   
-									FROM orderbook 
-									FINAL 
-									WHERE (tradingsymbol = '%s' AND order_timestamp >= '%s' AND order_timestamp <= '%s')
-									ORDER BY (order_timestamp, transaction_type)`, tradingSymbol, startT, endT)
+						transaction_type, 
+						tradingsymbol, 
+						average_price,
+						filled_quantity   
+					FROM orderbook 
+					FINAL 
+					WHERE (tradingsymbol = '%s' AND order_timestamp >= '%s' AND order_timestamp <= '%s')
+					ORDER BY (order_timestamp, transaction_type)`, tradingSymbol, startT, endT)
 
-	rows, err := connect.Query(query_statement)
+	rows, err := c.dbClient.Query(query_statement)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,7 +70,7 @@ func QueryAvgPrice(tradingSymbol string, startTime time.Time, endTime time.Time)
 	buyAvg := (totalBuy / buyQty)
 	sellAvg := (totalSell / sellQty)
 
-	rows1, err := connect.Query(query_statement)
+	rows1, err := c.dbClient.Query(query_statement)
 
 	defer rows1.Close()
 
@@ -94,6 +80,7 @@ func QueryAvgPrice(tradingSymbol string, startTime time.Time, endTime time.Time)
 			log.Fatal(err)
 		}
 		// calculate total buy equivalent to total sold qty
+		// rough calculation just to show an idea
 		if transactionType == "BUY" && averagePrice != 0 && realizedQty < sellQty {
 			realizedQty = filledQuantity + realizedQty
 			realizedBuy = averagePrice*filledQuantity + realizedBuy

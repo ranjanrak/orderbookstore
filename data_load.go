@@ -1,15 +1,12 @@
 package orderbookstore
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
 
-	"github.com/ClickHouse/clickhouse-go"
 	kiteconnect "github.com/zerodha/gokiteconnect/v3"
 )
 
-func DataLoad() {
+func (c *Client) DataLoad() {
 	const (
 		apiKey      string = "your api key"
 		accessToken string = "your access token"
@@ -21,22 +18,7 @@ func DataLoad() {
 	// Set access token
 	kc.SetAccessToken(accessToken)
 
-	// Use DSN as your clickhouse DB setup.
-	// visit https://github.com/ClickHouse/clickhouse-go#dsn to know more
-	connect, err := sql.Open("clickhouse", "tcp://127.0.0.1:9000?debug=true")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := connect.Ping(); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
-			fmt.Printf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
-		} else {
-			fmt.Println(err)
-		}
-	}
-
-	_, err = connect.Exec(`
+	_, err := c.dbClient.Exec(`
 		CREATE TABLE IF NOT EXISTS orderbook (
 			order_id           VARCHAR(255),
 			parent_order_id    VARCHAR(255),
@@ -70,7 +52,7 @@ func DataLoad() {
 		log.Fatal(err)
 	}
 
-	tx, err := connect.Begin()
+	tx, err := c.dbClient.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}

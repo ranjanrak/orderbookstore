@@ -28,24 +28,35 @@ type SymbolBook struct {
 	TransactionType string
 }
 
+// Client represents clickhouse DB client connection
+type Client struct {
+	dbClient *sql.DB
+}
+
 // Trades is list of trade
 type Trades []TradeStore
 
 // SymbolStore is list of SymbolBook trade
 type SymbolStore []SymbolBook
 
-func QuerySymbol(tradingSymbol string) SymbolStore {
+// Creates a new DB connection client
+func New() *Client {
 	// Use DSN as your clickhouse DB setup.
 	// visit https://github.com/ClickHouse/clickhouse-go#dsn to know more
 	connect, err := sql.Open("clickhouse", "tcp://127.0.0.1:9000?debug=true")
-	if err := connect.Ping(); err != nil {
+	if err = connect.Ping(); err != nil {
 		if exception, ok := err.(*clickhouse.Exception); ok {
 			fmt.Printf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
 		} else {
 			fmt.Println(err)
 		}
 	}
+	return &Client{
+		dbClient: connect,
+	}
+}
 
+func (c *Client) QuerySymbol(tradingSymbol string) SymbolStore {
 	queryStatement := fmt.Sprintf(`SELECT 
 					     order_timestamp, 
 					     order_id, 
@@ -57,12 +68,14 @@ func QuerySymbol(tradingSymbol string) SymbolStore {
 					WHERE (tradingsymbol = '%s' AND status = 'COMPLETE')
 					ORDER BY (order_timestamp, order_id)`, tradingSymbol)
 
-	rows, err := connect.Query(queryStatement)
+	rows, err := c.dbClient.Query(queryStatement)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	defer rows.Close()
+
+	var symbolList SymbolStore
 	for rows.Next() {
 		var (
 			orderTimestamp  string
@@ -88,17 +101,7 @@ func QuerySymbol(tradingSymbol string) SymbolStore {
 	return symbolList
 }
 
-func TradeBook(startTime, endTime time.Time) Trades {
-	// Use DSN as your clickhouse DB setup.
-	// visit https://github.com/ClickHouse/clickhouse-go#dsn to know more
-	connect, err := sql.Open("clickhouse", "tcp://127.0.0.1:9000?debug=true")
-	if err := connect.Ping(); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
-			fmt.Printf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
-		} else {
-			fmt.Println(err)
-		}
-	}
+func (c *Client) TradeBook(startTime, endTime time.Time) Trades {
 	startT := startTime.Format("2006-01-02 15:04:05")
 
 	endT := endTime.Format("2006-01-02 15:04:05")
@@ -115,7 +118,7 @@ func TradeBook(startTime, endTime time.Time) Trades {
 									WHERE (status = 'COMPLETE' AND order_timestamp >= '%s' AND order_timestamp <= '%s')
 									ORDER BY (order_timestamp)`, startT, endT)
 
-	rows, err := connect.Query(orderBookStatement)
+	rows, err := c.dbClient.Query(orderBookStatement)
 	if err != nil {
 		log.Fatal(err)
 	}
