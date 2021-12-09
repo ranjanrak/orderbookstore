@@ -20,19 +20,19 @@ func (c *Client) DataLoad() {
 
 	_, err := c.dbClient.Exec(`
 		CREATE TABLE IF NOT EXISTS orderbook (
-			order_id           VARCHAR(255),
-			parent_order_id    VARCHAR(255),
-			exchange_order_id  VARCHAR(255),
-			placed_by          VARCHAR(255),
-			variety            VARCHAR(255),
-			status             VARCHAR(255),
-			tradingsymbol      VARCHAR(255),
-			exchange           VARCHAR(255),
+			order_id           LowCardinality(String),
+			parent_order_id    LowCardinality(String),
+			exchange_order_id  LowCardinality(String),
+			placed_by          LowCardinality(String),
+			variety            LowCardinality(String),
+			status             LowCardinality(String),
+			tradingsymbol      LowCardinality(String),
+			exchange           LowCardinality(String),
 			instrument_token   UInt32,
-			transaction_type   VARCHAR(255),
-			order_type         VARCHAR(255),
-			product            VARCHAR(255),
-			validity           VARCHAR(255),
+			transaction_type   LowCardinality(String),
+			order_type         LowCardinality(String),
+			product            LowCardinality(String),
+			validity           LowCardinality(String),
 			price              FLOAT(),
 			quantity           FLOAT(),
 			trigger_price      FLOAT(),
@@ -42,9 +42,10 @@ func (c *Client) DataLoad() {
 			disclosed_quantity FLOAT(),
 			order_timestamp    DateTime('Asia/Calcutta'),
 			exchange_timestamp DateTime('Asia/Calcutta'),
-			status_message     VARCHAR(255),
-			tag                VARCHAR(255)
+			status_message     LowCardinality(String),
+			tag                LowCardinality(String)
 		) engine=ReplacingMergeTree()
+		PARTITION BY toYYYYMMDD(order_timestamp)
 		ORDER BY (order_id, order_timestamp, tradingsymbol)
 	`)
 
