@@ -7,16 +7,11 @@ import (
 )
 
 func (c *Client) DataLoad() {
-	const (
-		apiKey      string = "your api key"
-		accessToken string = "your access token"
-	)
-
 	// Create a new Kite connect instance
-	kc := kiteconnect.New(apiKey)
+	kc := kiteconnect.New(c.apiKey)
 
 	// Set access token
-	kc.SetAccessToken(accessToken)
+	kc.SetAccessToken(c.accessToken)
 
 	_, err := c.dbClient.Exec(`
 		CREATE TABLE IF NOT EXISTS orderbook (
