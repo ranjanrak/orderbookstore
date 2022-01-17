@@ -16,7 +16,13 @@ import (
 
 func main() {
     // Create new orderbook instance
-    client := orderbookstore.New()
+    client := orderbookstore.New(orderbookstore.ClientParam{
+        // Send DSN as per your clickhouse DB setup.
+        // visit https://github.com/ClickHouse/clickhouse-go#dsn to know more
+        DBSource:    "dsn_address",
+        ApiKey:      "your api key",
+        AccessToken: "your access token",
+    })
 
     // Store current orderbook data to clickhouse DB
     client.DataLoad()
