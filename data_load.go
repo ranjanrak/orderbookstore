@@ -100,5 +100,4 @@ func (c *Client) DataLoad() {
 	if err := tx.Commit(); err != nil {
 		log.Fatal(err)
 	}
-
 }

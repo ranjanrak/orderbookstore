@@ -37,7 +37,8 @@ func (c *Client) QuerySymbol(tradingSymbol string) SymbolStore {
 					     order_id, 
 						 exchange,
 					     tradingsymbol, 
-					     average_price   
+					     average_price, 
+						 transaction_type   
 					FROM orderbook 
 					FINAL 
 					WHERE (tradingsymbol = '%s' AND status = 'COMPLETE')

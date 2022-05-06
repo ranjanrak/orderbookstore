@@ -22,8 +22,6 @@ func (c *Client) QueryAvgPrice(tradingSymbol string, startTime time.Time, endTim
 	var (
 		totalBuy        float64
 		buyQty          float64
-		realizedQty     float64
-		realizedBuy     float64
 		totalSell       float64
 		sellQty         float64
 		transactionType string
@@ -50,7 +48,6 @@ func (c *Client) QueryAvgPrice(tradingSymbol string, startTime time.Time, endTim
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer rows.Close()
 
 	for rows.Next() {
@@ -70,30 +67,17 @@ func (c *Client) QueryAvgPrice(tradingSymbol string, startTime time.Time, endTim
 	buyAvg := (totalBuy / buyQty)
 	sellAvg := (totalSell / sellQty)
 
-	rows1, err := c.dbClient.Query(query_statement)
-
-	defer rows1.Close()
-
 	// calculate realized P&L
-	for rows1.Next() {
-		if err := rows1.Scan(&transactionType, &symbol, &averagePrice, &filledQuantity); err != nil {
-			log.Fatal(err)
-		}
-		// calculate total buy equivalent to total sold qty
-		// rough calculation just to show an idea
-		if transactionType == "BUY" && averagePrice != 0 && realizedQty < sellQty {
-			realizedQty = filledQuantity + realizedQty
-			realizedBuy = averagePrice*filledQuantity + realizedBuy
-		}
-	}
+	// rough calculation just to show an idea
+	realizedPnl := sellQty*sellAvg - sellQty*buyAvg
+
 	avgBook := AvgBook{
 		Symbol:      symbol,
 		BuyAvg:      math.Round(buyAvg*100) / 100,
 		BuyQty:      buyQty,
 		SellAvg:     math.Round(sellAvg*100) / 100,
 		SellQty:     sellQty,
-		RealizedPnl: math.Round((totalSell-realizedBuy)*100) / 100,
+		RealizedPnl: math.Round(realizedPnl*100) / 100,
 	}
-
 	return avgBook
 }
