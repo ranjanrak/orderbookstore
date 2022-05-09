@@ -12,6 +12,7 @@ type TradeStore struct {
 	Exchange        string
 	TradingSymbol   string
 	AveragePrice    float64
+	FilledQty       float64
 	TransactionType string
 }
 
@@ -88,6 +89,7 @@ func (c *Client) TradeBook(startTime, endTime time.Time) Trades {
 									exchange,
 									tradingsymbol,
 									average_price,
+									filled_quantity,
 									transaction_type
 									FROM orderbook
 									FINAL
@@ -107,9 +109,10 @@ func (c *Client) TradeBook(startTime, endTime time.Time) Trades {
 			exchange        string
 			tradingSymbol   string
 			averagePrice    float64
+			filledQuantity  float64
 			transactionType string
 		)
-		if err := rows.Scan(&orderTimestamp, &exchange, &tradingSymbol, &averagePrice, &transactionType); err != nil {
+		if err := rows.Scan(&orderTimestamp, &exchange, &tradingSymbol, &averagePrice, &filledQuantity, &transactionType); err != nil {
 			log.Fatal(err)
 		}
 		trade := TradeStore{
@@ -117,6 +120,7 @@ func (c *Client) TradeBook(startTime, endTime time.Time) Trades {
 			Exchange:        exchange,
 			TradingSymbol:   tradingSymbol,
 			AveragePrice:    averagePrice,
+			FilledQty:       filledQuantity,
 			TransactionType: transactionType,
 		}
 		tradesList = append(tradesList, trade)
